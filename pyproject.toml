@@ -1,0 +1,52 @@
+[project]
+name = "mess-track-backend"
+version = "0.1.0"
+description = "Mess Track SaaS Backend"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django",
+    "djangorestframework",
+    "psycopg2-binary",
+    "django-environ",
+    "django-cors-headers",
+    "drf-spectacular",
+    "django-extensions",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-django",
+    "factory-boy",
+    "ruff",
+    "pre-commit",
+    "mypy>=2.0.0",
+    "django-stubs>=6.0.4",
+    "djangorestframework-stubs>=3.16.9",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "C90", "B", "UP", "PL", "RUF"]
+ignore = []
+
+[tool.ruff]
+extend-exclude = ["*/migrations/*"]
+line-length = 88
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--nomigrations"
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+strict = true
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
