@@ -13,8 +13,7 @@ urlpatterns = [
         "api/v1/",
         include(
             [
-                # Add app URLs here as they are created
-                # path("accounts/", include("apps.accounts.urls")),
+                path("auth/", include("apps.accounts.urls")),
             ]
         ),
     ),
