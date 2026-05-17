@@ -82,7 +82,11 @@ class RegistrationSerializer(serializers.Serializer):
     phone_number = serializers.CharField(
         max_length=15, required=False, allow_blank=True
     )
-    password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    password = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+        trim_whitespace=False,
+    )
 
     def validate_email(self, value):
         email = User.objects.normalize_email(value).lower()
@@ -107,7 +111,11 @@ class RegistrationSerializer(serializers.Serializer):
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    password = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+        trim_whitespace=False,
+    )
 
     def validate_email(self, value):
         return User.objects.normalize_email(value).lower()

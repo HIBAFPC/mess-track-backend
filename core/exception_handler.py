@@ -20,10 +20,12 @@ from rest_framework.exceptions import (
 )
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 from core.constants import (
     DEFAULT_ERROR_MESSAGE,
     ERROR_CODE_AUTHENTICATION_FAILED,
+    ERROR_CODE_INVALID_TOKEN,
     ERROR_CODE_METHOD_NOT_ALLOWED,
     ERROR_CODE_NOT_AUTHENTICATED,
     ERROR_CODE_NOT_FOUND,
@@ -39,6 +41,7 @@ from core.exceptions import ApplicationError
 logger = logging.getLogger("mess_track.exceptions")
 
 EXCEPTION_CODE_MAP: dict[type[Exception], str] = {
+    InvalidToken: ERROR_CODE_INVALID_TOKEN,
     ValidationError: ERROR_CODE_VALIDATION,
     AuthenticationFailed: ERROR_CODE_AUTHENTICATION_FAILED,
     NotAuthenticated: ERROR_CODE_NOT_AUTHENTICATED,
