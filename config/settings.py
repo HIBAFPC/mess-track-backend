@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django_extensions",
     # Local apps
     "apps.accounts",
+    "apps.messes",
 ]
 
 MIDDLEWARE = [
