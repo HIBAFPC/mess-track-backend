@@ -49,11 +49,39 @@ class AuthResponseSerializer(serializers.Serializer):
     tokens = AuthTokensSerializer(read_only=True)
 
 
+class EmptyResponseDataSerializer(serializers.Serializer):
+    pass
+
+
+class BaseSuccessResponseSerializer(serializers.Serializer):
+    success = serializers.BooleanField(read_only=True)
+    message = serializers.CharField(read_only=True)
+    meta = serializers.DictField(read_only=True)
+
+
+class AuthSuccessResponseSerializer(BaseSuccessResponseSerializer):
+    data = AuthResponseSerializer(read_only=True)
+
+
+class UserProfileSuccessResponseSerializer(BaseSuccessResponseSerializer):
+    data = UserProfileSerializer(read_only=True)
+
+
+class TokenRefreshSuccessResponseSerializer(BaseSuccessResponseSerializer):
+    data = TokenRefreshResponseSerializer(read_only=True)
+
+
+class LogoutSuccessResponseSerializer(BaseSuccessResponseSerializer):
+    data = EmptyResponseDataSerializer(read_only=True)
+
+
 class RegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
-    phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True)
+    phone_number = serializers.CharField(
+        max_length=15, required=False, allow_blank=True
+    )
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     def validate_email(self, value):

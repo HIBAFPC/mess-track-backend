@@ -1,20 +1,24 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
-from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.accounts.permissions import IsAuthenticatedAndActive
 from apps.accounts.serializers import (
     AuthResponseSerializer,
+    AuthSuccessResponseSerializer,
     LoginSerializer,
     LogoutSerializer,
+    LogoutSuccessResponseSerializer,
     RegistrationSerializer,
     TokenRefreshResponseSerializer,
+    TokenRefreshSuccessResponseSerializer,
     UserProfileSerializer,
+    UserProfileSuccessResponseSerializer,
 )
 from apps.accounts.services import login_user, logout_user, register_user
+from core.responses import success_response
 
 
 class RegisterView(GenericAPIView):
@@ -26,7 +30,7 @@ class RegisterView(GenericAPIView):
         auth=[],
         request=RegistrationSerializer,
         responses={
-            201: AuthResponseSerializer,
+            201: AuthSuccessResponseSerializer,
             400: OpenApiResponse(description="Validation error."),
         },
     )
@@ -35,7 +39,11 @@ class RegisterView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         auth_payload = register_user(**serializer.validated_data)
         response_serializer = AuthResponseSerializer(auth_payload)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return success_response(
+            message="User registered successfully",
+            data=response_serializer.data,
+            status_code=status.HTTP_201_CREATED,
+        )
 
 
 class LoginView(GenericAPIView):
@@ -47,7 +55,7 @@ class LoginView(GenericAPIView):
         auth=[],
         request=LoginSerializer,
         responses={
-            200: AuthResponseSerializer,
+            200: AuthSuccessResponseSerializer,
             400: OpenApiResponse(description="Validation error."),
             401: OpenApiResponse(description="Invalid email or password."),
         },
@@ -57,7 +65,11 @@ class LoginView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         auth_payload = login_user(request=request, **serializer.validated_data)
         response_serializer = AuthResponseSerializer(auth_payload)
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
+        return success_response(
+            message="Login successful",
+            data=response_serializer.data,
+            status_code=status.HTTP_200_OK,
+        )
 
 
 class LogoutView(GenericAPIView):
@@ -68,7 +80,7 @@ class LogoutView(GenericAPIView):
         tags=["Authentication"],
         request=LogoutSerializer,
         responses={
-            205: OpenApiResponse(description="Successfully logged out."),
+            200: LogoutSuccessResponseSerializer,
             400: OpenApiResponse(description="Invalid or expired token."),
             401: OpenApiResponse(
                 description="Authentication credentials were not provided."
@@ -79,7 +91,11 @@ class LogoutView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         logout_user(refresh_token=serializer.validated_data["refresh"])
-        return Response(status=status.HTTP_205_RESET_CONTENT)
+        return success_response(
+            message="Logout successful",
+            data={},
+            status_code=status.HTTP_200_OK,
+        )
 
 
 class MeView(RetrieveAPIView):
@@ -89,12 +105,19 @@ class MeView(RetrieveAPIView):
     @extend_schema(
         tags=["Authentication"],
         responses={
-            200: UserProfileSerializer,
+            200: UserProfileSuccessResponseSerializer,
             401: OpenApiResponse(
                 description="Authentication credentials were not provided."
             ),
         },
     )
+    def retrieve(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object())
+        return success_response(
+            message="User profile fetched successfully",
+            data=serializer.data,
+        )
+
     def get_object(self):
         return self.request.user
 
@@ -108,9 +131,16 @@ class AuthTokenRefreshView(TokenRefreshView):
         auth=[],
         request=TokenRefreshSerializer,
         responses={
-            200: TokenRefreshResponseSerializer,
+            200: TokenRefreshSuccessResponseSerializer,
             401: OpenApiResponse(description="Invalid or expired token."),
         },
     )
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response_serializer = TokenRefreshResponseSerializer(serializer.validated_data)
+        return success_response(
+            message="Token refreshed successfully",
+            data=response_serializer.data,
+            status_code=status.HTTP_200_OK,
+        )
