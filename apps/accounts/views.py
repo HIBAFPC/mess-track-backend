@@ -136,9 +136,8 @@ class AuthTokenRefreshView(TokenRefreshView):
         },
     )
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        response_serializer = TokenRefreshResponseSerializer(serializer.validated_data)
+        response = super().post(request, *args, **kwargs)
+        response_serializer = TokenRefreshResponseSerializer(response.data)
         return success_response(
             message="Token refreshed successfully",
             data=response_serializer.data,
