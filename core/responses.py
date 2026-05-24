@@ -16,13 +16,18 @@ def success_response(
     message: str = DEFAULT_SUCCESS_MESSAGE,
     meta: dict[str, Any] | None = None,
     status_code: int = status.HTTP_200_OK,
+    allow_null_data: bool = False,
 ) -> Response:
     """Return a standardized success response."""
 
     payload = {
         "success": True,
         "message": message,
-        "data": {} if data is None else data,
+        "data": (
+            None
+            if allow_null_data and data is None
+            else ({} if data is None else data)
+        ),
         "meta": meta or {},
     }
     return Response(payload, status=status_code)

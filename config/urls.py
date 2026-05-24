@@ -14,6 +14,7 @@ urlpatterns = [
         include(
             [
                 path("auth/", include("apps.accounts.urls")),
+                path("messes/", include("apps.messes.urls")),
             ]
         ),
     ),

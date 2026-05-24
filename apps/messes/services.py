@@ -25,6 +25,7 @@ def create_mess(  # noqa: PLR0913
     *,
     name: str,
     owner: User,
+    slug: str | None = None,
     description: str = "",
     address: str = "",
     contact_email: str = "",
@@ -33,7 +34,7 @@ def create_mess(  # noqa: PLR0913
 ) -> Mess:
     validate_mess_management_access(user=owner)
 
-    slug = generate_unique_mess_slug(name)
+    slug = slug or generate_unique_mess_slug(name)
     settings_payload = dict(settings_overrides or {})
 
     with transaction.atomic():
@@ -114,6 +115,56 @@ def deactivate_mess(*, mess: Mess, actor: User) -> Mess:
         },
     )
     return mess
+
+
+def update_mess(*, mess: Mess, actor: User, **updates: Any) -> Mess:
+    validate_mess_ownership(user=actor, mess=mess)
+    if not updates:
+        return mess
+
+    for field, value in updates.items():
+        setattr(mess, field, value)
+
+    updated_fields = list(updates.keys())
+    if "updated_at" not in updated_fields:
+        updated_fields.append("updated_at")
+    mess.save(update_fields=updated_fields)
+
+    logger.info(
+        "Updated mess",
+        extra={
+            "mess_id": mess.id,
+            "actor_id": actor.id,
+        },
+    )
+    return mess
+
+
+def update_mess_settings(
+    *, mess: Mess, actor: User, **updates: Any
+) -> MessSettings:
+    validate_mess_ownership(user=actor, mess=mess)
+    settings_obj = mess.settings
+    if not updates:
+        return settings_obj
+
+    for field, value in updates.items():
+        setattr(settings_obj, field, value)
+
+    updated_fields = list(updates.keys())
+    if "updated_at" not in updated_fields:
+        updated_fields.append("updated_at")
+    settings_obj.save(update_fields=updated_fields)
+
+    logger.info(
+        "Updated mess settings",
+        extra={
+            "mess_id": mess.id,
+            "mess_settings_id": settings_obj.id,
+            "actor_id": actor.id,
+        },
+    )
+    return settings_obj
 
 
 def validate_mess_management_access(*, user: User) -> None:
